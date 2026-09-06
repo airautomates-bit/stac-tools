@@ -1,0 +1,17 @@
+fastapi>=0.116,<1
+uvicorn[standard]>=0.35,<1
+python-multipart>=0.0.20,<1
+Pillow>=12,<13
+pillow-heif>=1.1,<2
+numpy<2
+opencv-python-headless>=4.11,<5
+torch>=2.5.1
+torchvision
+timm>=1.0.23
+scipy
+scikit-image
+kornia
+einops
+transformers>=5.0
+huggingface-hub>0.25
+accelerate
