@@ -9,7 +9,7 @@ type ImageMeta = { width: number; height: number };
 type BgQuality = 'fast' | 'hd' | 'ultra';
 type ConvertFormat = 'png' | 'jpg' | 'webp' | 'avif' | 'heic' | 'tiff' | 'bmp' | 'gif' | 'ico' | 'svg' | 'pdf';
 
-const IMAGE_API = (process.env.NEXT_PUBLIC_IMAGE_API_URL || '').replace(/\/$/, '');
+const IMAGE_API = 'https://airautomates-bit--stac-bg-remover-backgroundremover-web.modal.run';
 const MEDIA_API = (process.env.NEXT_PUBLIC_MEDIA_API_URL || '').replace(/\/$/, '');
 const MAX_PIXELS = 100_000_000;
 const MAX_BYTES = 100 * 1024 * 1024;
