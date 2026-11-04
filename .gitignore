@@ -1,7 +1,18 @@
 node_modules
 .next
-.env
-.env.local
+out
 .vercel
 .DS_Store
 *.log
+*.tsbuildinfo
+
+# Never commit secrets
+.env
+.env.*
+!.env.example
+
+# Python (workers)
+__pycache__/
+*.pyc
+.venv/
+venv/
