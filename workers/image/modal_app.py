@@ -16,6 +16,14 @@ MODEL_ID = "ZhengPeng7/BiRefNet_dynamic"
 # Longest side of the temporary copy the model sees. Output is always full size.
 MASK_SIDE = {"fast": 1024, "hd": 1600, "ultra": 2304}
 
+# Sites allowed to call this worker from a browser (set at container start;
+# Modal's image env step can't carry the regex backslashes).
+CORS = {
+    "STAC_CORS_ORIGINS": "https://stac-tools.vercel.app,http://localhost:3000",
+    # This project's Vercel preview deployments.
+    "STAC_CORS_ORIGIN_REGEX": r"https://stac-tools(-[a-z0-9-]+)?\.vercel\.app",
+}
+
 app = modal.App(APP_NAME)
 
 image = (
@@ -41,8 +49,6 @@ image = (
     .env({
         "HF_HOME": "/root/.cache/huggingface",
         "HF_XET_HIGH_PERFORMANCE": "1",
-        "STAC_CORS_ORIGINS": "https://stac-tools.vercel.app,http://localhost:3000",
-        "STAC_CORS_ORIGIN_REGEX": r"https://stac-tools(-[a-z0-9-]+)?\.vercel\.app",
         "STAC_MAX_UPLOAD_MB": "100",
         "STAC_MAX_PIXELS": "100000000",
     })
@@ -108,6 +114,10 @@ class BackgroundRemover:
     @modal.asgi_app()
     def web(self):
         import logging
+        import os
+
+        for key, value in CORS.items():
+            os.environ.setdefault(key, value)
 
         from image_core import create_app
 

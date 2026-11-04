@@ -12,8 +12,8 @@ Free image and media tools: https://stac-tools.vercel.app
 Browser ── UI ─────────────────────────────> Vercel (Next.js, static)
    │
    ├─ PNG/JPG/WEBP/SVG/PDF conversion ──────> runs in the browser
-   ├─ BG removal + HEIC/TIFF/BMP/GIF/ICO ───> workers/image  (Modal, GPU)
-   └─ social downloads ─────────────────────> workers/media  (Modal, CPU)
+   ├─ background removal ───────────────────> workers/image  (Modal, GPU)
+   └─ downloads + HEIC/TIFF/BMP/GIF/ICO ────> workers/media  (Modal, CPU; conversion at /image/convert)
 ```
 
 Large files go straight from the browser to the workers, so they never pass through Vercel's request limits.
@@ -48,7 +48,8 @@ cd ../image && modal deploy modal_app.py
 The app and class names match the existing deployments, so the URLs above stay the same.
 
 - `workers/media/media_core.py`: `POST /resolve {url}` lists a post's photos and videos (thumbnails inline). `POST /download {url, index, audio}` returns the file.
-- `workers/image/image_core.py`: `POST /remove-background` (file, quality=fast|hd|ultra) and `POST /convert` (file, format, quality).
+- `workers/image/image_core.py`: `POST /remove-background` (file, quality=fast|hd|ultra) and `POST /convert` (file, format, quality). The media worker also mounts this app at `/image`, so the site converts on CPU at `/image/convert` instead of waking a GPU.
+- Deploying the GPU image worker needs a payment method on the Modal account.
 
 Both cores are plain FastAPI apps (`create_app()`), so they can be run locally with uvicorn for testing.
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { PDFDocument } from 'pdf-lib';
 import ImageTracer from 'imagetracerjs';
-import { IMAGE_API, MAX_BYTES } from '@/lib/config';
+import { MAX_BYTES, MEDIA_API } from '@/lib/config';
 import { baseName, canvasToBlob, downloadBlob, drawFileToCanvas, errorMessage, fileFormat, networkError, prettyBytes, validateImage, type ImageMeta } from '@/lib/utils';
 import UploadBox from './UploadBox';
 import { IconDownload, IconImage } from './icons';
@@ -99,7 +99,7 @@ export default function ConvertTool() {
     form.append('file', src);
     form.append('format', target);
     form.append('quality', String(quality));
-    const res = await fetch(`${IMAGE_API}/convert`, { method: 'POST', body: form });
+    const res = await fetch(`${MEDIA_API}/image/convert`, { method: 'POST', body: form });
     if (!res.ok) throw new Error(await errorMessage(res, `Conversion failed (${res.status}).`));
     return res.blob();
   }
