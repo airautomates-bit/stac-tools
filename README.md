@@ -4,7 +4,7 @@ Free image and media tools: https://stac-tools.vercel.app
 
 - **Background remover**: full-resolution transparent PNG (BiRefNet on a Modal GPU)
 - **Image converter**: PNG, JPG, WEBP, AVIF, HEIC, TIFF, BMP, GIF, ICO, SVG (vector trace), PDF
-- **Downloaders**: Instagram (reels, videos, photos, carousels), Pinterest, Facebook (videos, reels), X / Twitter (videos, GIFs, photos), Threads (beta), with MP3 audio extraction
+- **Downloaders**: YouTube (videos, Shorts, up to 1080p), Instagram (reels, videos, photos, carousels), Pinterest, Facebook (videos, reels), X / Twitter (videos, GIFs, photos), Threads (beta), with MP3 audio extraction
 
 ## Architecture
 
@@ -54,7 +54,7 @@ Both cores are plain FastAPI apps (`create_app()`), so they can be run locally w
 
 ## Security
 
-- **SSRF**: the media worker only accepts links on Instagram, Pinterest, Facebook, X and Threads. yt-dlp is limited to those extractors (never `generic`). Direct fetches only go to the platform CDNs over HTTPS, and every redirect is re-checked.
+- **SSRF**: the media worker only accepts links on YouTube, Instagram, Pinterest, Facebook, X and Threads (YouTube is limited to single videos and Shorts). yt-dlp is limited to those extractors (never `generic`). Direct fetches only go to the platform CDNs over HTTPS, and every redirect is re-checked.
 - **CORS**: the workers only answer `stac-tools.vercel.app`, its Vercel previews and `localhost:3000`. Edit `STAC_CORS_ORIGINS` / `STAC_CORS_ORIGIN_REGEX` in each `modal_app.py` if the domain changes.
 - **Abuse and cost**: per-IP rate limits (shared through a `modal.Dict`), plus `max_containers` caps (2 GPUs, 4 media containers), upload, pixel and file-size limits.
 - **No leaks**: generic error messages to the browser, details only in the worker logs. API docs (`/docs`, `/openapi.json`) are disabled.

@@ -17,7 +17,12 @@ app = modal.App(APP_NAME)
 
 image = (
     modal.Image.debian_slim(python_version="3.12")
-    .apt_install("ffmpeg", "ca-certificates")
+    .apt_install("ffmpeg", "ca-certificates", "curl", "unzip")
+    # Deno: the JavaScript runtime yt-dlp uses for YouTube's player challenges.
+    .run_commands(
+        "curl -fsSL https://deno.land/install.sh | DENO_INSTALL=/usr/local sh -s -- -y",
+        "deno --version",
+    )
     .pip_install(
         "fastapi>=0.118,<1",
         "pydantic>=2.11,<3",

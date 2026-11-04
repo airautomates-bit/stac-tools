@@ -9,14 +9,15 @@ import { PlatformIcon } from './PlatformIcon';
 import { IconArrow, IconConvert, IconEraser, IconHome, IconShield } from './icons';
 
 const IMAGE_TOOLS = [
-  { key: 'remove' as const, name: 'Background remover', short: 'BG remover', icon: IconEraser, tint: 'lilac', ink: '#5b4bdb', copy: 'Cut out any subject at full resolution with clean, detailed edges.', tags: ['Transparent PNG', 'Up to 100 MP'] },
-  { key: 'convert' as const, name: 'Image converter', short: 'Converter', icon: IconConvert, tint: 'peach', ink: '#d9480f', copy: 'Convert between 11 formats, including HEIC, AVIF and vector SVG.', tags: ['11 formats', 'Mostly on-device'] },
+  { key: 'remove' as const, name: 'Background remover', short: 'BG remover', icon: IconEraser, tint: 'sky', ink: '#1889be', copy: 'Cut out any subject at full resolution with clean, detailed edges.', tags: ['Transparent PNG', 'Up to 100 MP'] },
+  { key: 'convert' as const, name: 'Image converter', short: 'Converter', icon: IconConvert, tint: 'peach', ink: '#f85800', copy: 'Convert between 11 formats, including HEIC, AVIF and vector SVG.', tags: ['11 formats', 'Mostly on-device'] },
 ];
 
 const TITLES: Record<ToolKey, { title: string; sub: string }> = {
   home: { title: 'Discover tools', sub: 'Edit images and save media from your favourite platforms — all in one place.' },
   remove: { title: 'Background remover', sub: 'Full-resolution cut-outs powered by our GPU model.' },
   convert: { title: 'Image converter', sub: 'PNG, JPG, WEBP, AVIF, HEIC, TIFF, BMP, GIF, ICO, SVG and PDF.' },
+  youtube: { title: 'YouTube', sub: 'Videos and Shorts as MP4 or MP3.' },
   instagram: { title: 'Instagram', sub: 'Reels, videos, photos and carousels.' },
   pinterest: { title: 'Pinterest', sub: 'Video pins and image pins.' },
   facebook: { title: 'Facebook', sub: 'Videos and reels.' },

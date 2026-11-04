@@ -54,6 +54,7 @@ PLATFORM_HOSTS: dict[str, tuple[str, ...]] = {
     "x": ("x.com", "twitter.com"),
     "threads": ("threads.com", "threads.net"),
     "pinterest": ("pin.it",),  # pinterest.<tld> handled by regex below
+    "youtube": ("youtube.com", "youtu.be", "youtube-nocookie.com"),
 }
 PINTEREST_RE = re.compile(r"(^|\.)pinterest\.(com|ca|co\.uk|com\.au|de|fr|es|it|pt|jp|nz|ie|ch|at|se|dk|cl|com\.mx|ph|ru|kr)$")
 
@@ -63,6 +64,7 @@ CDN_SUFFIXES = (
     "fbcdn.net",
     "twimg.com",
     "pinimg.com",
+    "ytimg.com",
 )
 
 YTDLP_EXTRACTORS = {
@@ -70,6 +72,8 @@ YTDLP_EXTRACTORS = {
     "facebook": ["facebook", "facebook:reel", "FacebookPluginsVideo"],
     "pinterest": ["Pinterest"],
     "x": ["twitter"],
+    # Single videos and Shorts only (no playlists / channels).
+    "youtube": ["youtube", "YoutubeYtBe"],
 }
 
 PLATFORM_LABEL = {
@@ -78,6 +82,7 @@ PLATFORM_LABEL = {
     "x": "X",
     "threads": "Threads",
     "pinterest": "Pinterest",
+    "youtube": "YouTube",
 }
 
 
@@ -118,7 +123,7 @@ def detect_platform(raw: str) -> tuple[str, str]:
             platform = "pinterest"
         else:
             raise UserError(
-                "Paste a link from Instagram, Pinterest, Facebook, X or Threads."
+                "Paste a link from YouTube, Instagram, Pinterest, Facebook, X or Threads."
             )
     clean = urlunparse(("https", host, p.path or "/", "", p.query, ""))
     return platform, clean
@@ -236,6 +241,10 @@ def _ytdlp_base(platform: str) -> dict:
         "cachedir": False,
         "max_filesize": MAX_BYTES,
         "logger": _QuietLogger(),
+        # YouTube links can carry &list=…; only ever take the single video.
+        "noplaylist": platform == "youtube",
+        # YouTube needs a JavaScript runtime to solve its player challenges.
+        "js_runtimes": {"deno": {}, "node": {}},
     }
 
 
@@ -300,6 +309,8 @@ def _resolve_ytdlp(platform: str, url: str) -> dict:
                 "height": e.get("height"),
                 "duration": e.get("duration"),
             })
+        elif platform == "youtube":
+            continue
         elif thumb.get("url"):
             items.append({
                 "kind": "image",
@@ -459,8 +470,32 @@ def _resolve_threads(url: str) -> dict:
     }
 
 
+YT_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
+
+
+def _canonical_youtube(url: str) -> str:
+    """Reduce any single-video YouTube link to https://www.youtube.com/watch?v=ID."""
+    from urllib.parse import parse_qs
+
+    p = urlparse(url)
+    host = (p.hostname or "").lower()
+    parts = [x for x in p.path.split("/") if x]
+    vid = None
+    if host == "youtu.be" and parts:
+        vid = parts[0]
+    elif parts and parts[0] == "watch":
+        vid = (parse_qs(p.query).get("v") or [None])[0]
+    elif len(parts) >= 2 and parts[0] in ("shorts", "live", "embed", "v"):
+        vid = parts[1]
+    if not vid or not YT_ID_RE.match(vid):
+        raise UserError("Paste a link to a single YouTube video or Short (playlists and channels aren't supported).")
+    return f"https://www.youtube.com/watch?v={vid}"
+
+
 def resolve(platform: str, url: str) -> dict:
     url = _expand_short_link(url, platform)
+    if platform == "youtube":
+        url = _canonical_youtube(url)
     if platform == "x":
         result = _resolve_x(url)
     elif platform == "threads":
@@ -469,6 +504,11 @@ def resolve(platform: str, url: str) -> dict:
         result = _resolve_ytdlp(platform, url)
     result["platform"] = platform
     result["url"] = url
+    if not result["items"] and platform == "youtube":
+        raise UserError(
+            "This video can't be downloaded — it may be private, age-restricted, members-only or a live stream.",
+            422,
+        )
     if not result["items"]:
         raise UserError(
             "No photos or videos found in this post. Text-only posts can't be downloaded.",
@@ -569,7 +609,6 @@ def download(result: dict, index: int, as_audio: bool, workdir: Path) -> tuple[P
     opts = {
         **_ytdlp_base(platform),
         "outtmpl": str(workdir / "dl.%(ext)s"),
-        "noplaylist": False,
     }
     if item.get("ytdlp_index"):
         opts["playlist_items"] = str(item["ytdlp_index"])
@@ -577,7 +616,12 @@ def download(result: dict, index: int, as_audio: bool, workdir: Path) -> tuple[P
         opts["format"] = "bestaudio/best"
         opts["postprocessors"] = [{"key": "FFmpegExtractAudio", "preferredcodec": "mp3", "preferredquality": "0"}]
     else:
-        opts["format"] = "bv*[ext=mp4]+ba[ext=m4a]/bv*+ba/b[ext=mp4]/b"
+        # Prefer H.264/AAC MP4 up to 1080p so files play everywhere and stay a sane size.
+        opts["format"] = (
+            "bv*[ext=mp4][vcodec^=avc][height<=1080]+ba[ext=m4a]/"
+            "bv*[ext=mp4][height<=1080]+ba[ext=m4a]/"
+            "b[ext=mp4][height<=1080]/bv*[height<=1080]+ba/bv*+ba/b"
+        )
         opts["merge_output_format"] = "mp4"
     try:
         with yt_dlp.YoutubeDL(opts) as ydl:

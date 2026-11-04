@@ -23,3 +23,4 @@ export const IconPinterest = (p: P) => <svg {...base} {...p}><circle cx="12" cy=
 export const IconFacebook = (p: P) => <svg {...base} {...p}><circle cx="12" cy="12" r="8.5" /><path d="M13.2 20.4V13h2.4l.4-2.8h-2.8V8.6c0-.8.3-1.4 1.4-1.4h1.5V4.8" /><path d="M10.2 10.2h3" /></svg>;
 export const IconX = (p: P) => <svg {...base} {...p}><path d="M4.5 4.5h4.2l10.8 15h-4.2zM19.2 4.5l-5.9 6.6M10.7 12.9l-5.9 6.6" /></svg>;
 export const IconThreads = (p: P) => <svg {...base} {...p}><path d="M16.6 11.2c-.4-2.7-2.1-4-4.6-4-2.6 0-4.3 1.9-4.3 4.8 0 3 1.7 4.9 4.4 4.9 2.3 0 3.6-1.3 3.6-3 0-1.8-1.4-2.7-3.3-2.7-1.7 0-2.6.8-2.6 1.8s.9 1.6 2 1.6c2.2 0 3-1.9 2.6-4.3" /><path d="M19.8 9c-.9-3.5-3.7-5.5-7.7-5.5-5 0-8.3 3.4-8.3 8.5s3.3 8.5 8.3 8.5c3.4 0 5.9-1.5 7-4" /></svg>;
+export const IconYouTube = (p: P) => <svg {...base} {...p}><rect x="2.5" y="5.5" width="19" height="13" rx="4" /><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor" stroke="none" /></svg>;

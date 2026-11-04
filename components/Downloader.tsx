@@ -46,7 +46,7 @@ export default function Downloader({ platform, initialUrl = '', onSwitch }: { pl
     const value = url.trim();
     if (busy) return;
     if (!value) { setError(`Paste ${article(platform.name)} ${platform.name} link first.`); return; }
-    if (!detected) { setError('That link isn\'t from Instagram, Pinterest, Facebook, X or Threads.'); return; }
+    if (!detected) { setError('That link isn\'t from YouTube, Instagram, Pinterest, Facebook, X or Threads.'); return; }
     if (mismatch) { setError(`That's ${article(mismatch.name)} ${mismatch.name} link — switch to the ${mismatch.nav} downloader.`); return; }
     setBusy(true); setError(''); setResult(null); setItemError('');
     try {
