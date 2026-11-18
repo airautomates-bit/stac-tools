@@ -27,7 +27,6 @@ import subprocess
 import tempfile
 import time
 from concurrent.futures import ThreadPoolExecutor
-from html import unescape
 from pathlib import Path
 from typing import Any, Callable, Protocol
 from urllib.parse import urlparse, urlunparse
@@ -52,7 +51,6 @@ PLATFORM_HOSTS: dict[str, tuple[str, ...]] = {
     "instagram": ("instagram.com", "instagr.am"),
     "facebook": ("facebook.com", "fb.watch", "fb.com"),
     "x": ("x.com", "twitter.com"),
-    "threads": ("threads.com", "threads.net"),
     "pinterest": ("pin.it",),  # pinterest.<tld> handled by regex below
     "youtube": ("youtube.com", "youtu.be", "youtube-nocookie.com"),
 }
@@ -80,7 +78,6 @@ PLATFORM_LABEL = {
     "instagram": "Instagram",
     "facebook": "Facebook",
     "x": "X",
-    "threads": "Threads",
     "pinterest": "Pinterest",
     "youtube": "YouTube",
 }
@@ -123,7 +120,7 @@ def detect_platform(raw: str) -> tuple[str, str]:
             platform = "pinterest"
         else:
             raise UserError(
-                "Paste a link from YouTube, Instagram, Pinterest, Facebook, X or Threads."
+                "Paste a link from YouTube, Instagram, Pinterest, Facebook or X."
             )
     clean = urlunparse(("https", host, p.path or "/", "", p.query, ""))
     return platform, clean
@@ -411,65 +408,6 @@ def _resolve_x(url: str) -> dict:
     }
 
 
-THREADS_PATH_RE = re.compile(r"^/(?:@([A-Za-z0-9._]{1,40})/post|t)/([A-Za-z0-9_-]{5,40})")
-
-
-def _resolve_threads(url: str) -> dict:
-    m = THREADS_PATH_RE.match(urlparse(url).path)
-    if not m:
-        raise UserError("Paste a link to a single Threads post (it contains /post/).")
-    user, code = m.group(1) or "_", m.group(2)
-    embed = f"https://www.threads.com/@{user}/post/{code}/embed"
-
-    def allow_threads(u: str) -> bool:
-        p = urlparse(u)
-        return p.scheme == "https" and _host_matches((p.hostname or "").lower(), ("threads.com", "threads.net"))
-
-    html_bytes, _ = safe_stream(embed, None, 5 * 1024 * 1024, allow=allow_threads)
-    html = html_bytes.decode("utf-8", "replace")
-
-    items: list[dict] = []
-    seen: set[str] = set()
-
-    for vm in re.finditer(r"<video\b([^>]*)>(.*?)</video>", html, re.S | re.I):
-        attrs, inner = vm.group(1), vm.group(2)
-        src = re.search(r'\bsrc="([^"]+)"', attrs) or re.search(r'<source\b[^>]*\bsrc="([^"]+)"', inner)
-        poster = re.search(r'\bposter="([^"]+)"', attrs)
-        if not src:
-            continue
-        vurl = unescape(src.group(1))
-        if vurl in seen or not _is_cdn(vurl):
-            continue
-        seen.add(vurl)
-        items.append({
-            "kind": "video",
-            "source": "direct",
-            "url": vurl,
-            "thumb_url": unescape(poster.group(1)) if poster else None,
-        })
-
-    posters = {i.get("thumb_url") for i in items}
-    for im in re.finditer(r"<img\b([^>]*)>", html, re.I):
-        attrs = im.group(1)
-        src = re.search(r'\bsrc="([^"]+)"', attrs)
-        if not src:
-            continue
-        iurl = unescape(src.group(1))
-        # Skip avatars (profile pictures live under "-19/" paths) and tiny images.
-        if not _is_cdn(iurl) or "-19/" in iurl or "s150x150" in iurl or iurl in seen or iurl in posters:
-            continue
-        seen.add(iurl)
-        items.append({"kind": "image", "source": "direct", "url": iurl, "thumb_url": iurl})
-
-    author_m = re.search(r'class="[^"]*Username[^"]*"[^>]*>\s*([^<]+)<', html)
-    return {
-        "title": "",
-        "author": (author_m.group(1).strip() if author_m else (user if user != "_" else "")),
-        "id": code,
-        "items": items[:MAX_ITEMS],
-    }
-
-
 YT_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
 
 
@@ -498,8 +436,6 @@ def resolve(platform: str, url: str) -> dict:
         url = _canonical_youtube(url)
     if platform == "x":
         result = _resolve_x(url)
-    elif platform == "threads":
-        result = _resolve_threads(url)
     else:
         result = _resolve_ytdlp(platform, url)
     result["platform"] = platform

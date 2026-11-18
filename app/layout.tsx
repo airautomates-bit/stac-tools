@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'sw
 
 export const metadata: Metadata = {
   title: 'STAC Tools — Background Remover, Image Converter & Media Downloader',
-  description: 'Free tools by STAC: remove backgrounds at full resolution, convert between 11 image formats, and download from YouTube, Instagram, Pinterest, Facebook, X and Threads.',
+  description: 'Free tools by STAC: remove backgrounds at full resolution, convert between 11 image formats, and download from YouTube, Instagram, Pinterest, Facebook and X.',
   icons: { icon: '/favicon.png', shortcut: '/favicon.png', apple: '/favicon.png' },
 };
 

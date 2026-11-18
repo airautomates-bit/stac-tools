@@ -22,7 +22,6 @@ const TITLES: Record<ToolKey, { title: string; sub: string }> = {
   pinterest: { title: 'Pinterest', sub: 'Video pins and image pins.' },
   facebook: { title: 'Facebook', sub: 'Videos and reels.' },
   x: { title: 'X / Twitter', sub: 'Videos, GIFs and photos.' },
-  threads: { title: 'Threads', sub: 'Videos and photos.' },
 };
 
 function readHash(): ToolKey {

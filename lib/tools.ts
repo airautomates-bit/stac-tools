@@ -1,4 +1,4 @@
-export type PlatformKey = 'youtube' | 'instagram' | 'pinterest' | 'facebook' | 'x' | 'threads';
+export type PlatformKey = 'youtube' | 'instagram' | 'pinterest' | 'facebook' | 'x';
 export type ToolKey = 'home' | 'remove' | 'convert' | PlatformKey;
 
 export type PlatformInfo = {
@@ -45,12 +45,6 @@ export const PLATFORMS: PlatformInfo[] = [
     chips: ['Videos', 'Photos', 'GIFs', 'MP3 audio'],
     placeholder: 'https://x.com/user/status/…', tint: 'lilac', ink: '#dee6ef',
   },
-  {
-    key: 'threads', name: 'Threads', nav: 'Threads', title: 'Threads downloader',
-    blurb: 'Save videos and photos from public Threads posts.',
-    chips: ['Videos', 'Photos'],
-    placeholder: 'https://www.threads.com/@user/post/…', tint: 'mint', ink: '#7ee0b8', beta: true,
-  },
 ];
 
 export const PLATFORM_BY_KEY = Object.fromEntries(PLATFORMS.map((p) => [p.key, p])) as Record<PlatformKey, PlatformInfo>;
@@ -68,7 +62,6 @@ export function detectPlatform(raw: string): PlatformKey | null {
     if (is('pin.it') || /(^|\.)pinterest\.[a-z.]+$/.test(host)) return 'pinterest';
     if (is('facebook.com') || is('fb.watch') || is('fb.com')) return 'facebook';
     if (is('x.com') || is('twitter.com')) return 'x';
-    if (is('threads.com') || is('threads.net')) return 'threads';
   } catch {}
   return null;
 }
